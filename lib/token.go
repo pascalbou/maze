@@ -10,8 +10,3 @@ func TokenGenerator() string {
 	rand.Read(result)
 	return fmt.Sprintf("%x", result)
 }
-
-// func main() {
-// 	token := tokenGenerator()
-// 	fmt.Println(token)
-// }

@@ -13,10 +13,6 @@ type body struct {
 	Token string
 }
 
-// type test struct {
-// 	Name string
-// }
-
 func handler(w http.ResponseWriter, r *http.Request) {
 	token := lib.TokenGenerator()
 	// fmt.Println(token)
@@ -27,7 +23,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if errD != nil {
 		panic(errD)
 	}
-	// fmt.Println(n.Name)
 
 	newBody := body{Name: n.Name, Token: token}
 	response, err := json.Marshal(newBody)
