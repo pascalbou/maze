@@ -8,6 +8,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/pascalbou/maze/api"
 	"github.com/pascalbou/maze/lib"
+	"github.com/pascalbou/maze/rooms"
 )
 
 type body struct {
@@ -42,6 +43,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	api.CreateDB()
+	rooms.CreateRooms()
 
 	http.HandleFunc("/newplayer", handler)
 	log.Fatal(http.ListenAndServe(":3000", nil))
