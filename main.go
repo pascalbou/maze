@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
+	_ "github.com/lib/pq"
+	"github.com/pascalbou/maze/api"
 	"github.com/pascalbou/maze/lib"
 )
 
@@ -15,7 +18,7 @@ type body struct {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	token := lib.TokenGenerator()
-	// fmt.Println(token)
+	// fmt.Println(len(token))
 
 	var n body
 	decoder := json.NewDecoder(r.Body)
@@ -23,6 +26,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if errD != nil {
 		panic(errD)
 	}
+
+	api.NewPlayer(n.Name, token)
 
 	newBody := body{Name: n.Name, Token: token}
 	response, err := json.Marshal(newBody)
@@ -37,6 +42,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	api.CreateDB()
+
 	http.HandleFunc("/newplayer", handler)
 	log.Fatal(http.ListenAndServe(":3000", nil))
+
 }
