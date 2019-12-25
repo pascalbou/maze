@@ -1,7 +1,9 @@
 package rooms
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -124,44 +126,56 @@ func CreateRooms() {
 
 	}
 	fmt.Println(rooms)
-	
-	// connStr := "user=postgres password=test1234 dbname=maze"
-	// db, err := sql.Open("postgres", connStr)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer db.Close()
 
-	// var sqlStatement [16]string
+	connStr := "user=postgres password=test1234 dbname=maze"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-	// sqlStatement[0] = `
-	// drop table if exists room;
-	// create table room (
-	// 	id SERIAL,
-	// 	room_id INT,
-	// 	north INT,
-	// 	east INT,
-	// 	south INT,
-	// 	west INT,
-	// 	x INT,
-	// 	y INT
-	// );
-	// `
+	var sqlStatement [16]string
 
-	// sqlStatement[1] = `
-	// insert into room (room_id, north, east, south, west, x, y)
-	// values
-	// `
+	sqlStatement[0] = `
+	drop table if exists room;
+	create table room (
+		id SERIAL,
+		room_id INT,
+		north INT,
+		east INT,
+		south INT,
+		west INT,
+		x INT,
+		y INT
+	);
+	`
 
-	// vals := fmt.Sprintf("(%d, %d, %d, %d, %d, %d, %d", )
+	_, err1 := db.Exec(sqlStatement[0])
+	if err1 != nil {
+		log.Fatal(err1)
+	}
 
-	// _, err1 := db.Exec(sqlStatement[0])
-	// if err1 != nil {
-	// 	log.Fatal(err1)
-	// }
+	sqlStatement[1] = `
+		insert into room (room_id, north, east, south, west, x, y)
+		values
+		`
+	// sqlStatement[1] += fmt.Sprintf("\t(%d, %d, %d, %d, %d, %d, %d)\n\t\t", rooms[0].id, rooms[0].exits["north"], rooms[0].exits["east"], rooms[0].exits["south"], rooms[0].exits["west"], rooms[0].x, rooms[0].y)	
 
-	// _, err2 := db.Exec(sqlStatement[1])
-	// if err2 != nil {
-	// 	log.Fatal(err2)
-	// }
+	// fmt.Println(sqlStatement[1])
+
+	for i := 0; i < len(rooms); i++ {
+		vals := fmt.Sprintf("\t(%d, %d, %d, %d, %d, %d, %d),\n\t\t", rooms[i].id, rooms[i].exits["north"], rooms[i].exits["east"], rooms[i].exits["south"], rooms[i].exits["west"], rooms[i].x, rooms[i].y)
+		// fmt.Println(vals)
+		sqlStatement[1] += vals
+		fmt.Println(sqlStatement[1])
+
+	}
+
+	sqlStatement[1] = sqlStatement[1][:len(sqlStatement[1])-4]
+	fmt.Println(sqlStatement[1])
+
+	_, err2 := db.Exec(sqlStatement[1])
+	if err2 != nil {
+		log.Fatal(err2)
+	}
 }
