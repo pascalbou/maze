@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	_ "github.com/lib/pq"
@@ -42,11 +41,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	api.CreateDB()
+	// api.CreateDB()
 	rooms.CreateRooms()
 
-	http.HandleFunc("/newplayer", handler)
-	log.Println("Listening on port 3000")
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	// http.HandleFunc("/newplayer", handler)
+	// log.Println("Listening on port 3000")
+	// log.Fatal(http.ListenAndServe(":3000", nil))
 
 }
