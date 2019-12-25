@@ -7,14 +7,12 @@ import (
 )
 
 type room struct {
-	id          int
-	title       string
-	description string
+	id int
 	// north   room
 	// east    room
 	// south   room
 	// west	room
-	exits map[string]room
+	exits map[string]int
 	x     int
 	y     int
 }
@@ -81,7 +79,7 @@ func conditionsRoom(existingRoom, x, y int) bool {
 
 func CreateRooms() {
 	rand.Seed(time.Now().Unix())
-	var rooms [500]room
+	rooms := make(map[int]room)
 	wholeMaze := make(map[string]string)
 
 	var x, y int
@@ -92,10 +90,10 @@ func CreateRooms() {
 	// countRooms := 1
 	wholeMaze["0,0"] = "0"
 	previousRoom := rooms[0]
-	previousRoom.exits = make(map[string]room)
+	previousRoom.exits = make(map[string]int)
 	var currentRoom room
 
-	for i := 0; i < 10; i++ {
+	for i := 1; i < 10; i++ {
 		randomDirection := getDirection()
 		oppositeDirection := getOppositeDirectopn(randomDirection)
 		x, y = getCoordinates(randomDirection, x, y)
@@ -111,16 +109,22 @@ func CreateRooms() {
 		fmt.Println(y)
 
 		if conditionsRoom(len(wholeMaze[keyWholeMaze]), x, y) {
-			currentRoom.exits = make(map[string]room)
-			previousRoom.exits[randomDirection] = currentRoom
-			currentRoom.exits[oppositeDirection] = previousRoom
+			currentRoom.exits = make(map[string]int)
+			previousRoom.exits[randomDirection] = currentRoom.id
+			currentRoom.exits[oppositeDirection] = previousRoom.id
 			wholeMaze[keyWholeMaze] = string(i)
+			// fmt.Println(currentRoom)
+			// fmt.Println(rooms[i])
+			rooms[currentRoom.id] = currentRoom
+			rooms[previousRoom.id] = previousRoom
 			previousRoom = currentRoom
 		} else {
-			i--
+			break
 		}
-	}
 
+	}
+	fmt.Println(rooms)
+	
 	// connStr := "user=postgres password=test1234 dbname=maze"
 	// db, err := sql.Open("postgres", connStr)
 	// if err != nil {
@@ -134,29 +138,29 @@ func CreateRooms() {
 	// drop table if exists room;
 	// create table room (
 	// 	id SERIAL,
-	// 	title VARCHAR(64),
-	// 	description VARCHAR(256),
-	// 	exit_north boolean,
-	// 	exit_east boolean,
-	// 	exit_south boolean,
-	// 	exit_west boolean
+	// 	room_id INT,
+	// 	north INT,
+	// 	east INT,
+	// 	south INT,
+	// 	west INT,
+	// 	x INT,
+	// 	y INT
 	// );
 	// `
 
 	// sqlStatement[1] = `
-	// insert into room (title, description, exit_north, exit_south)
+	// insert into room (room_id, north, east, south, west, x, y)
 	// values
-	// 	($1, $2, true, false),
-	// 	($1, $2, true, true),
-	// 	($1, $2, false, true)
 	// `
+
+	// vals := fmt.Sprintf("(%d, %d, %d, %d, %d, %d, %d", )
 
 	// _, err1 := db.Exec(sqlStatement[0])
 	// if err1 != nil {
 	// 	log.Fatal(err1)
 	// }
 
-	// _, err2 := db.Exec(sqlStatement[1], "title", "description")
+	// _, err2 := db.Exec(sqlStatement[1])
 	// if err2 != nil {
 	// 	log.Fatal(err2)
 	// }
