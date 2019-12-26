@@ -27,10 +27,6 @@ func createOneRoom(id, x, y int) room {
 	}
 }
 
-// func createTenRandomRooms(id int) {
-
-// }
-
 func getDirection() string {
 	var directions []string
 	directions = append(directions, "north", "east", "south", "west")
@@ -89,43 +85,61 @@ func CreateRooms() {
 	y = 0
 
 	rooms[0] = createOneRoom(0, x, y)
-	// countRooms := 1
+	countRooms := 1
 	wholeMaze["0,0"] = "0"
-	previousRoom := rooms[0]
-	previousRoom.exits = make(map[string]int)
-	var currentRoom room
 
-	for i := 1; i < 10; i++ {
-		randomDirection := getDirection()
-		oppositeDirection := getOppositeDirectopn(randomDirection)
-		x, y = getCoordinates(randomDirection, x, y)
-		currentRoom = createOneRoom(i, x, y)
-		keyWholeMaze := fmt.Sprintf("%d,%d", x, y)
-
-		fmt.Println(randomDirection)
-		fmt.Println(oppositeDirection)
-		fmt.Println(currentRoom)
-		fmt.Println(keyWholeMaze)
-		fmt.Println(len(wholeMaze[keyWholeMaze]))
-		fmt.Println(x)
-		fmt.Println(y)
-
-		if conditionsRoom(len(wholeMaze[keyWholeMaze]), x, y) {
-			currentRoom.exits = make(map[string]int)
-			previousRoom.exits[randomDirection] = currentRoom.id
-			currentRoom.exits[oppositeDirection] = previousRoom.id
-			wholeMaze[keyWholeMaze] = string(i)
-			// fmt.Println(currentRoom)
-			// fmt.Println(rooms[i])
-			rooms[currentRoom.id] = currentRoom
-			rooms[previousRoom.id] = previousRoom
-			previousRoom = currentRoom
-		} else {
-			break
+	for countRooms < 500 {
+		remainingRooms := 500 - countRooms
+		if remainingRooms > 10 {
+			remainingRooms = 10
 		}
-
+		previousRoom := rooms[rand.Intn(len(rooms))-1]
+		if previousRoom.exits == nil {
+			previousRoom.exits = make(map[string]int)
+		}
+		for i := 0; i < remainingRooms; i++ {
+			randomDirection := getDirection()
+			oppositeDirection := getOppositeDirectopn(randomDirection)
+			x, y = getCoordinates(randomDirection, previousRoom.x, previousRoom.y)
+			currentRoom := createOneRoom(countRooms, x, y)
+			keyWholeMaze := fmt.Sprintf("%d,%d", x, y)
+	
+			// fmt.Println(randomDirection)
+			// fmt.Println(oppositeDirection)
+			// fmt.Println(currentRoom)
+			// fmt.Println(keyWholeMaze)
+			// fmt.Println(len(wholeMaze[keyWholeMaze]))
+			// fmt.Println(x)
+			// fmt.Println(y)
+	
+			if conditionsRoom(len(wholeMaze[keyWholeMaze]), x, y) {
+				currentRoom.exits = make(map[string]int)
+				previousRoom.exits[randomDirection] = currentRoom.id
+				currentRoom.exits[oppositeDirection] = previousRoom.id
+				wholeMaze[keyWholeMaze] = string(countRooms)
+				// fmt.Println(currentRoom)
+				// fmt.Println(rooms[i])
+				rooms[currentRoom.id] = currentRoom
+				rooms[previousRoom.id] = previousRoom
+				previousRoom = currentRoom
+				countRooms++
+				
+			} else {
+				break
+			}
+		}
 	}
-	fmt.Println(rooms)
+
+	fmt.Println(countRooms)
+	fmt.Println(len(rooms))
+	// fmt.Println(rooms)
+	// for k, v := range rooms {
+	// 	fmt.Println(k, v)
+	// }
+	for i:=0;i<len(rooms);i++ {
+		fmt.Println(i, rooms[i])
+	}
+
 
 	connStr := "user=postgres password=test1234 dbname=maze"
 	db, err := sql.Open("postgres", connStr)
@@ -167,12 +181,12 @@ func CreateRooms() {
 		vals := fmt.Sprintf("\t(%d, %d, %d, %d, %d, %d, %d),\n\t\t", rooms[i].id, rooms[i].exits["north"], rooms[i].exits["east"], rooms[i].exits["south"], rooms[i].exits["west"], rooms[i].x, rooms[i].y)
 		// fmt.Println(vals)
 		sqlStatement[1] += vals
-		fmt.Println(sqlStatement[1])
+		// fmt.Println(sqlStatement[1])
 
 	}
 
 	sqlStatement[1] = sqlStatement[1][:len(sqlStatement[1])-4]
-	fmt.Println(sqlStatement[1])
+	// fmt.Println(sqlStatement[1])
 
 	_, err2 := db.Exec(sqlStatement[1])
 	if err2 != nil {
