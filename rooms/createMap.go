@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -88,14 +89,15 @@ func CreateRooms() {
 	countRooms := 1
 	wholeMaze["0,0"] = "1"
 
-	totalRooms := 20
+	totalRooms := 500
 
-	for countRooms < totalRooms {
-		remainingRooms := totalRooms - countRooms
+	for countRooms < totalRooms+1 {
+		remainingRooms := totalRooms+1 - countRooms
 		if remainingRooms > 10 {
 			remainingRooms = 10
 		}
-		previousRoom := rooms[rand.Intn(len(rooms))]
+		previousRoom := rooms[rand.Intn(len(rooms))+1]
+		
 		if previousRoom.exits == nil {
 			previousRoom.exits = make(map[string]int)
 		}
@@ -103,9 +105,10 @@ func CreateRooms() {
 			randomDirection := getDirection()
 			oppositeDirection := getOppositeDirectopn(randomDirection)
 			x, y = getCoordinates(randomDirection, previousRoom.x, previousRoom.y)
-			currentRoom := createOneRoom(countRooms, x, y)
+			currentRoom := createOneRoom(countRooms+1, x, y)
 			keyWholeMaze := fmt.Sprintf("%d,%d", x, y)
-	
+
+			// fmt.Println(previousRoom)
 			// fmt.Println(randomDirection)
 			// fmt.Println(oppositeDirection)
 			// fmt.Println(currentRoom)
@@ -113,35 +116,30 @@ func CreateRooms() {
 			// fmt.Println(len(wholeMaze[keyWholeMaze]))
 			// fmt.Println(x)
 			// fmt.Println(y)
-	
+
 			if conditionsRoom(len(wholeMaze[keyWholeMaze]), x, y) {
 				currentRoom.exits = make(map[string]int)
 				previousRoom.exits[randomDirection] = currentRoom.id
 				currentRoom.exits[oppositeDirection] = previousRoom.id
-				wholeMaze[keyWholeMaze] = string(countRooms)
+				wholeMaze[keyWholeMaze] = strconv.Itoa(countRooms)
 				// fmt.Println(currentRoom)
 				// fmt.Println(rooms[i])
 				rooms[currentRoom.id] = currentRoom
 				rooms[previousRoom.id] = previousRoom
 				previousRoom = currentRoom
 				countRooms++
-				
+
 			} else {
 				break
 			}
 		}
 	}
 
-	fmt.Println(countRooms)
-	fmt.Println(len(rooms))
-	// fmt.Println(rooms)
-	// for k, v := range rooms {
-	// 	fmt.Println(k, v)
-	// }
-	for i:=0;i<len(rooms);i++ {
+	// fmt.Println(countRooms)
+	// fmt.Println(len(rooms))
+	for i := 1; i < len(rooms); i++ {
 		fmt.Println(i, rooms[i])
 	}
-
 
 	connStr := "user=postgres password=test1234 dbname=maze"
 	db, err := sql.Open("postgres", connStr)
@@ -157,10 +155,10 @@ func CreateRooms() {
 	create table room (
 		id SERIAL,
 		room_id INT,
-		north INT,
-		east INT,
-		south INT,
-		west INT,
+		north VARCHAR(8),
+		east VARCHAR(8),
+		south VARCHAR(8),
+		west VARCHAR(8),
 		x INT,
 		y INT
 	);
@@ -175,11 +173,8 @@ func CreateRooms() {
 		insert into room (room_id, north, east, south, west, x, y)
 		values
 		`
-	// sqlStatement[1] += fmt.Sprintf("\t(%d, %d, %d, %d, %d, %d, %d)\n\t\t", rooms[0].id, rooms[0].exits["north"], rooms[0].exits["east"], rooms[0].exits["south"], rooms[0].exits["west"], rooms[0].x, rooms[0].y)	
 
-	// fmt.Println(sqlStatement[1])
-
-	for i := 0; i < len(rooms); i++ {
+	for i := 1; i < len(rooms); i++ {
 		vals := fmt.Sprintf("\t(%d, %d, %d, %d, %d, %d, %d),\n\t\t", rooms[i].id, rooms[i].exits["north"], rooms[i].exits["east"], rooms[i].exits["south"], rooms[i].exits["west"], rooms[i].x, rooms[i].y)
 		// fmt.Println(vals)
 		sqlStatement[1] += vals
