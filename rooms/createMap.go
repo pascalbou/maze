@@ -89,7 +89,7 @@ func CreateRooms() {
 	countRooms := 1
 	wholeMaze["0,0"] = "1"
 
-	totalRooms := 500
+	totalRooms := 10
 
 	for countRooms < totalRooms+1 {
 		remainingRooms := totalRooms+1 - countRooms
