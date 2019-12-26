@@ -84,16 +84,18 @@ func CreateRooms() {
 	x = 0
 	y = 0
 
-	rooms[0] = createOneRoom(0, x, y)
+	rooms[1] = createOneRoom(1, x, y)
 	countRooms := 1
-	wholeMaze["0,0"] = "0"
+	wholeMaze["0,0"] = "1"
 
-	for countRooms < 500 {
-		remainingRooms := 500 - countRooms
+	totalRooms := 20
+
+	for countRooms < totalRooms {
+		remainingRooms := totalRooms - countRooms
 		if remainingRooms > 10 {
 			remainingRooms = 10
 		}
-		previousRoom := rooms[rand.Intn(len(rooms))-1]
+		previousRoom := rooms[rand.Intn(len(rooms))]
 		if previousRoom.exits == nil {
 			previousRoom.exits = make(map[string]int)
 		}
