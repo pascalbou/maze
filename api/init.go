@@ -2,10 +2,11 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 )
 
-func Init(token string) string {
+func Init(token string) (string, int) {
 	connStr := "user=postgres password=test1234 dbname=maze"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -14,8 +15,7 @@ func Init(token string) string {
 	defer db.Close()
 
 	q := `
-	SELECT current_room FROM account WHERE token=$1
-
+	SELECT name, current_room FROM account WHERE token=$1
 	`
 
 	rows, err1 := db.Query(q, token)
@@ -24,14 +24,16 @@ func Init(token string) string {
 	}
 	defer rows.Close()
 
-	var room string
+	var name string
+	var room int
 	for rows.Next() {
-		if err:= rows.Scan(&room); err != nil {
+		if err := rows.Scan(&name, &room); err != nil {
 			panic(err)
 		}
 	}
 
+	fmt.Println(name, room)
 
-	return room
+	return name, room
 
 }

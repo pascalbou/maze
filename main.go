@@ -42,7 +42,7 @@ func newPlayerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type initBody struct {
-	// Name string
+	Name string
 	Token string
 	CurrentRoom int
 	// North int
@@ -59,9 +59,8 @@ func initHandler(w http.ResponseWriter, r *http.Request) {
 		panic(errD)
 	}
 
-	currentRoom := api.Init(b.Token)
-	// newBody := initBody{Name: name, CurrentRoom: currentRoom}
-	response, err := json.Marshal(currentRoom)
+	b.Name, b.CurrentRoom = api.Init(b.Token)
+	response, err := json.Marshal(b)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -73,7 +72,7 @@ func initHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	api.CreateDB()
+	// api.CreateDB()
 	rooms.CreateRooms()
 
 	http.HandleFunc("/newplayer", newPlayerHandler)
