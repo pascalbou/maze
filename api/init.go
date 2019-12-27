@@ -42,10 +42,6 @@ func InitHandler(w http.ResponseWriter, r *http.Request) {
 	SELECT account.name, account.current_room, room.north, room.east, room.south, room.west FROM account INNER JOIN room ON (account.current_room = room.room_id) WHERE account.token=$1;
 	`
 
-	// 	q := `
-	// SELECT * FROM account INNER JOIN room ON (account.current_room = room.room_id) WHERE account.token=$1;
-	// `
-
 	rows, err1 := db.Query(q, t.Token)
 	if err1 != nil {
 		panic(err1)

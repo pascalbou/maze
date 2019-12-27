@@ -137,9 +137,9 @@ func CreateRooms() {
 
 	// fmt.Println(countRooms)
 	// fmt.Println(len(rooms))
-	// for i := 1; i < len(rooms); i++ {
-	// 	fmt.Println(i, rooms[i])
-	// }
+	for i := 1; i < len(rooms); i++ {
+		fmt.Println(i, rooms[i])
+	}
 
 	connStr := "user=postgres password=test1234 dbname=maze"
 	db, err := sql.Open("postgres", connStr)
