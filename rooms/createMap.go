@@ -87,8 +87,8 @@ func CreateRooms() {
 
 	totalRooms := 10
 
-	for countRooms < totalRooms+1 {
-		remainingRooms := totalRooms+1 - countRooms
+	for countRooms < totalRooms {
+		remainingRooms := totalRooms - countRooms
 		if remainingRooms > 10 {
 			remainingRooms = 10
 		}
@@ -129,7 +129,7 @@ func CreateRooms() {
 		}
 	}
 
-	for i := 1; i < len(rooms); i++ {
+	for i := 1; i < len(rooms)+1; i++ {
 		fmt.Println(i, rooms[i])
 	}
 
@@ -166,7 +166,7 @@ func CreateRooms() {
 		values
 		`
 
-	for i := 1; i < len(rooms); i++ {
+	for i := 1; i < len(rooms)+1; i++ {
 		vals := fmt.Sprintf("\t(%d, %d, %d, %d, %d, %d, %d),\n\t\t", rooms[i].id, rooms[i].exits["north"], rooms[i].exits["east"], rooms[i].exits["south"], rooms[i].exits["west"], rooms[i].x, rooms[i].y)
 		sqlStatement[1] += vals
 
