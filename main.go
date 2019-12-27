@@ -41,47 +41,13 @@ func newPlayerHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 }
 
-type initBody struct {
-	Name string
-	// Token string
-	CurrentRoom int
-	// North int
-	// East int
-	// South int
-	// West int
-}
-
-type token struct {
-	Token string
-}
-
-func initHandler(w http.ResponseWriter, r *http.Request) {
-	var b initBody
-	var t token
-	decoder := json.NewDecoder(r.Body)
-	errD := decoder.Decode(&t)
-	if errD != nil {
-		panic(errD)
-	}
-
-	b.Name, b.CurrentRoom = api.Init(t.Token)
-	response, err := json.Marshal(b)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(200)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-}
 
 func main() {
 	// api.CreateDB()
 	rooms.CreateRooms()
 
 	http.HandleFunc("/newplayer", newPlayerHandler)
-	http.HandleFunc("/init", initHandler)
+	http.HandleFunc("/init", api.InitHandler)
 
 	log.Println("Listening on port 3000")
 	log.Fatal(http.ListenAndServe(":3000", nil))
