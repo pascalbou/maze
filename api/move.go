@@ -15,11 +15,12 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 		Token     string
 		Direction string
 	}
-	
+
 	type moveRes struct {
 		PreviousRoom int
-		CurrentRoom    int
-		Message     string
+		CurrentRoom  int
+		Message      string
+		Cooldown     float32
 	}
 
 	var req moveReq
@@ -75,15 +76,29 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 	if res.CurrentRoom != 0 {
 		res.Message = "You moved " + req.Direction
 		q := `
-		UPDATE account SET current_room = $2 WHERE account.token=$1;
+		UPDATE account SET current_room = $2, cooldown = $3 WHERE account.token=$1;
 		`
 
-		_, err := db.Exec(q, req.Token, res.CurrentRoom)
+		cooldown := lib.AddCooldown(30)
+		res.Cooldown = 30
+
+		_, err := db.Exec(q, req.Token, res.CurrentRoom, cooldown)
 		if err != nil {
 			log.Fatal(err)
-		} 
+		}
 	} else {
-		res.Message = "You cannot move " + req.Direction
+		res.Message = "Cooldown penalty 60s. You cannot move " + req.Direction
+		q := `
+		UPDATE account SET cooldown = $2 WHERE account.token=$1;
+		`
+
+		cooldown := lib.AddCooldown(60)
+		res.Cooldown = 60
+
+		_, err := db.Exec(q, req.Token, cooldown)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	response, err := json.Marshal(res)
