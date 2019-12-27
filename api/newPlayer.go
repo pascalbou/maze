@@ -46,9 +46,9 @@ func NewPlayerHandler(w http.ResponseWriter, r *http.Request) {
 	($1, $2, 1)
 	`
 
-	_, errQ := db.Exec(sqlStatement, req.Name, res.Token)
-	if errQ != nil {
-		log.Fatal(errQ)
+	_, err = db.Exec(sqlStatement, req.Name, res.Token)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	response, err := json.Marshal(res)

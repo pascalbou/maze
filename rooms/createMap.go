@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/pascalbou/maze/lib"
 )
 
 type room struct {
@@ -133,7 +135,11 @@ func CreateRooms() {
 		fmt.Println(i, rooms[i])
 	}
 
-	connStr := "user=postgres password=test1234 dbname=maze"
+	dbUser := lib.GetEnviron()["DB_USER"]
+	dbPass := lib.GetEnviron()["DB_PASS"]
+	dbName := lib.GetEnviron()["DB_NAME"]
+
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s", dbUser, dbPass, dbName)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
@@ -156,9 +162,9 @@ func CreateRooms() {
 	);
 	`
 
-	_, err1 := db.Exec(sqlStatement[0])
-	if err1 != nil {
-		log.Fatal(err1)
+	_, err = db.Exec(sqlStatement[0])
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	sqlStatement[1] = `
@@ -174,8 +180,8 @@ func CreateRooms() {
 
 	sqlStatement[1] = sqlStatement[1][:len(sqlStatement[1])-4]
 
-	_, err2 := db.Exec(sqlStatement[1])
-	if err2 != nil {
-		log.Fatal(err2)
+	_, err = db.Exec(sqlStatement[1])
+	if err != nil {
+		log.Fatal(err)
 	}
 }

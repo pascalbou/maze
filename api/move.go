@@ -60,14 +60,14 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 	SELECT %s FROM room WHERE room.room_id=$1;
 	`, req.Direction)
 
-	rows2, err := db.Query(q2, res.PreviousRoom)
+	rows, err = db.Query(q2, res.PreviousRoom)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows2.Close()
+	defer rows.Close()
 
-	for rows2.Next() {
-		if err := rows2.Scan(&res.CurrentRoom); err != nil {
+	for rows.Next() {
+		if err := rows.Scan(&res.CurrentRoom); err != nil {
 			log.Fatal(err)
 		}
 	}

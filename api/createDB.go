@@ -24,9 +24,9 @@ func CreateDB() {
 	);
 	`
 
-	_, err1 := db.Exec(q)
-	if err1 != nil {
-		panic(err1)
+	_, err = db.Exec(q)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }
