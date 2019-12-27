@@ -11,13 +11,17 @@ import (
 
 func NewPlayerHandler(w http.ResponseWriter, r *http.Request) {
 
-	type body struct {
+	type npReq struct {
 		Name  string
+	}
+
+	type npRes struct {
 		Token string
 	}
 
-	var req body
-	req.Token = lib.TokenGenerator()
+	var req npReq
+	var res npRes
+	res.Token = lib.TokenGenerator()
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&req)
 	if err != nil {
@@ -37,12 +41,12 @@ func NewPlayerHandler(w http.ResponseWriter, r *http.Request) {
 	($1, $2, 1)
 	`
 	
-	_, errQ := db.Exec(sqlStatement, req.Name, req.Token)
+	_, errQ := db.Exec(sqlStatement, req.Name, res.Token)
 	if errQ != nil {
 		log.Fatal(errQ)
 	}
 	
-	response, err := json.Marshal(req)
+	response, err := json.Marshal(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

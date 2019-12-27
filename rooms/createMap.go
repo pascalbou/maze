@@ -11,10 +11,6 @@ import (
 
 type room struct {
 	id int
-	// north   room
-	// east    room
-	// south   room
-	// west	room
 	exits map[string]int
 	x     int
 	y     int
@@ -122,8 +118,6 @@ func CreateRooms() {
 				previousRoom.exits[randomDirection] = currentRoom.id
 				currentRoom.exits[oppositeDirection] = previousRoom.id
 				wholeMaze[keyWholeMaze] = strconv.Itoa(countRooms)
-				// fmt.Println(currentRoom)
-				// fmt.Println(rooms[i])
 				rooms[currentRoom.id] = currentRoom
 				rooms[previousRoom.id] = previousRoom
 				previousRoom = currentRoom
@@ -135,8 +129,6 @@ func CreateRooms() {
 		}
 	}
 
-	// fmt.Println(countRooms)
-	// fmt.Println(len(rooms))
 	for i := 1; i < len(rooms); i++ {
 		fmt.Println(i, rooms[i])
 	}
@@ -176,14 +168,11 @@ func CreateRooms() {
 
 	for i := 1; i < len(rooms); i++ {
 		vals := fmt.Sprintf("\t(%d, %d, %d, %d, %d, %d, %d),\n\t\t", rooms[i].id, rooms[i].exits["north"], rooms[i].exits["east"], rooms[i].exits["south"], rooms[i].exits["west"], rooms[i].x, rooms[i].y)
-		// fmt.Println(vals)
 		sqlStatement[1] += vals
-		// fmt.Println(sqlStatement[1])
 
 	}
 
 	sqlStatement[1] = sqlStatement[1][:len(sqlStatement[1])-4]
-	// fmt.Println(sqlStatement[1])
 
 	_, err2 := db.Exec(sqlStatement[1])
 	if err2 != nil {

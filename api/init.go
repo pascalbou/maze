@@ -7,29 +7,27 @@ import (
 	"net/http"
 )
 
-type initBody struct {
-	Name        string
-	CurrentRoom int
-	North       int `json:",omitempty"`
-	East        int `json:",omitempty"`
-	South       int `json:",omitempty"`
-	West        int `json:",omitempty"`
-}
-
-type token struct {
-	Token string
-}
-
 func InitHandler(w http.ResponseWriter, r *http.Request) {
-	var b initBody
-	var t token
-	decoder := json.NewDecoder(r.Body)
-	errD := decoder.Decode(&t)
-	if errD != nil {
-		panic(errD)
+	type initRes struct {
+		Name        string
+		CurrentRoom int
+		North       int `json:",omitempty"`
+		East        int `json:",omitempty"`
+		South       int `json:",omitempty"`
+		West        int `json:",omitempty"`
+	}
+	
+	type initReq struct {
+		Token string
 	}
 
-	// fmt.Println(t)
+	var res initRes
+	var token initReq
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&token)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	connStr := "user=postgres password=test1234 dbname=maze"
 	db, err := sql.Open("postgres", connStr)
@@ -42,19 +40,19 @@ func InitHandler(w http.ResponseWriter, r *http.Request) {
 	SELECT account.name, account.current_room, room.north, room.east, room.south, room.west FROM account INNER JOIN room ON (account.current_room = room.room_id) WHERE account.token=$1;
 	`
 
-	rows, err1 := db.Query(q, t.Token)
-	if err1 != nil {
-		panic(err1)
+	rows, err := db.Query(q, token.Token)
+	if err != nil {
+		log.Fatal(err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		if err := rows.Scan(&b.Name, &b.CurrentRoom, &b.North, &b.East, &b.South, &b.West); err != nil {
-			panic(err)
+		if err := rows.Scan(&res.Name, &res.CurrentRoom, &res.North, &res.East, &res.South, &res.West); err != nil {
+			log.Fatal(err)
 		}
 	}
 
-	response, err := json.Marshal(b)
+	response, err := json.Marshal(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
