@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 )
 
@@ -32,7 +31,7 @@ func Init(token string) (string, int) {
 		}
 	}
 
-	fmt.Println(name, room)
+	// fmt.Println(name, room)
 
 	return name, room
 

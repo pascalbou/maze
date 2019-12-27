@@ -43,7 +43,7 @@ func newPlayerHandler(w http.ResponseWriter, r *http.Request) {
 
 type initBody struct {
 	Name string
-	Token string
+	// Token string
 	CurrentRoom int
 	// North int
 	// East int
@@ -51,15 +51,20 @@ type initBody struct {
 	// West int
 }
 
+type token struct {
+	Token string
+}
+
 func initHandler(w http.ResponseWriter, r *http.Request) {
 	var b initBody
+	var t token
 	decoder := json.NewDecoder(r.Body)
-	errD := decoder.Decode(&b)
+	errD := decoder.Decode(&t)
 	if errD != nil {
 		panic(errD)
 	}
 
-	b.Name, b.CurrentRoom = api.Init(b.Token)
+	b.Name, b.CurrentRoom = api.Init(t.Token)
 	response, err := json.Marshal(b)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
