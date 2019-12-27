@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/pascalbou/maze/lib"
 )
 
 func MoveHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +30,11 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	connStr := "user=postgres password=test1234 dbname=maze"
+	dbUser := lib.GetEnviron()["DB_USER"]
+	dbPass := lib.GetEnviron()["DB_PASS"]
+	dbName := lib.GetEnviron()["DB_NAME"]
+
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s", dbUser, dbPass, dbName)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
