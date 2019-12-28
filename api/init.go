@@ -54,15 +54,15 @@ func InitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var cooldown int64
+	var cooldownDB int64
 
 	for rows.Next() {
-		if err := rows.Scan(&res.Name, &res.CurrentRoom, &cooldown, &res.North, &res.East, &res.South, &res.West); err != nil {
+		if err := rows.Scan(&res.Name, &res.CurrentRoom, &cooldownDB, &res.North, &res.East, &res.South, &res.West); err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	cooldown = cdlib.GetCooldown(cooldown)
+	cooldown := cdlib.GetCooldown(cooldownDB)
 	if cooldown < 0 {
 		cooldown = 1000
 	}

@@ -44,7 +44,9 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	if check := cdlib.CanAct(req.Token); check != 0 {
+	check := cdlib.CanAct(req.Token)
+
+	if check != 0 {
 		res.Cooldown = check
 		res.Message = "You acted before your cooldown finished. Penalty +15s."
 

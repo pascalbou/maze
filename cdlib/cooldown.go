@@ -13,9 +13,8 @@ func CreateCooldown(seconds time.Duration) int64 {
 	return time.Now().Add(time.Second*seconds).UnixNano() / int64(time.Millisecond)
 }
 
-func GetCooldown(cooldown int64) int64 {
-	result := cooldown - time.Now().UnixNano()/int64(time.Millisecond)
-	return result
+func GetCooldown(cooldownDB int64) int64 {
+	return cooldownDB - time.Now().UnixNano()/int64(time.Millisecond)
 }
 
 func CanAct(token string) float32 {
@@ -40,10 +39,10 @@ func CanAct(token string) float32 {
 	}
 	defer rows.Close()
 
-	var cooldown int64
+	var cooldownDB int64
 
 	for rows.Next() {
-		if err := rows.Scan(&cooldown); err != nil {
+		if err := rows.Scan(&cooldownDB); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -55,19 +54,18 @@ func CanAct(token string) float32 {
 	var res caBody
 	var cooldownTime time.Time
 
-	cooldown = GetCooldown(cooldown)
+	cooldown := GetCooldown(cooldownDB)
+
 	if cooldown > 0 {
 		// adds 15s then reconvert to ms
-		cooldownTime = time.Unix(0, cooldown*int64(time.Millisecond)).Add(time.Second * 15)
-		fmt.Println(cooldownTime)
-		cooldown = cooldownTime.UnixNano() / int64(time.Millisecond)
-		fmt.Println(cooldown)
+		cooldownTime = time.Now().Add(time.Second * time.Duration(15+int(cooldown/1000)))
+		cooldownDB = cooldownTime.UnixNano() / int64(time.Millisecond)
 		res.Cooldown = float32(cooldown) / 1000
 
 		sqlStatement := `
 		UPDATE account SET cooldown = $2 WHERE account.token=$1;
 		`
-		_, err = db.Exec(sqlStatement, token, cooldown)
+		_, err = db.Exec(sqlStatement, token, cooldownDB)
 		if err != nil {
 			log.Fatal(err)
 		}
