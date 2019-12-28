@@ -16,10 +16,15 @@ func InitHandler(w http.ResponseWriter, r *http.Request) {
 		Name        string
 		CurrentRoom int
 		Cooldown    float32
-		North       int `json:",omitempty"`
-		East        int `json:",omitempty"`
-		South       int `json:",omitempty"`
-		West        int `json:",omitempty"`
+		// North       int `json:",omitempty"`
+		// East        int `json:",omitempty"`
+		// South       int `json:",omitempty"`
+		// West        int `json:",omitempty"`
+		North       int `json:"-"`
+		East        int `json:"-"`
+		South       int `json:"-"`
+		West        int `json:"-"`
+		Exits []string
 	}
 
 	type initReq struct {
@@ -67,6 +72,30 @@ func InitHandler(w http.ResponseWriter, r *http.Request) {
 		cooldown = 1000
 	}
 	res.Cooldown = float32(cooldown) / 1000
+
+	// var list []int
+	// list = append(list, "North", "East", "South", "West")
+
+	// for _, element := list {
+	// 	if res[string(element)] != 0 {
+	// 		res.Exits = append(res.Exits, string(element))
+	// 	}
+	// }
+
+	if res.North != 0 {
+		res.Exits = append(res.Exits, "north")
+	}
+	if res.East != 0 {
+		res.Exits = append(res.Exits, "east")
+	}
+	if res.South != 0 {
+		res.Exits = append(res.Exits, "south")
+	}
+	if res.West != 0 {
+		res.Exits = append(res.Exits, "west")
+	}
+
+	// fmt.Println(res.Exits)
 
 	response, err := json.Marshal(res)
 	if err != nil {
