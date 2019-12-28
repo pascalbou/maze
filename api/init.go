@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/pascalbou/maze/cdlib"
 	"github.com/pascalbou/maze/lib"
 )
 
@@ -61,7 +62,10 @@ func InitHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	cooldown = lib.GetCooldown(cooldown)
+	cooldown = cdlib.GetCooldown(cooldown)
+	if cooldown < 0 {
+		cooldown = 1000
+	}
 	res.Cooldown = float32(cooldown) / 1000
 
 	response, err := json.Marshal(res)

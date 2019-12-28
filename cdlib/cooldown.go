@@ -1,29 +1,24 @@
-package lib
+package cdlib
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/pascalbou/maze/lib"
 )
 
-func AddCooldown(seconds time.Duration) int64 {
+func CreateCooldown(seconds time.Duration) int64 {
 	return time.Now().Add(time.Second*seconds).UnixNano() / int64(time.Millisecond)
 }
 
 func GetCooldown(cooldown int64) int64 {
 	result := cooldown - time.Now().UnixNano()/int64(time.Millisecond)
-	if result < 0 {
-		result = 1000
-	}
 	return result
 }
 
-func CanAct(token string) bool {
+func CanAct(token string) float32 {
 
 	dbUser := lib.GetEnviron()["DB_USER"]
 	dbPass := lib.GetEnviron()["DB_PASS"]
@@ -36,10 +31,10 @@ func CanAct(token string) bool {
 	}
 	defer db.Close()
 
-	q := `
+	sqlStatement := `
 	SELECT account.cooldown FROM account WHERE account.token=$1;
 	`
-	rows, err := db.Query(q, token)
+	rows, err := db.Query(sqlStatement, token)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,38 +53,27 @@ func CanAct(token string) bool {
 		Cooldown float32
 	}
 	var res caBody
+	var cooldownTime time.Time
 
-	cooldown -= time.Now().UnixNano() / int64(time.Millisecond)
+	cooldown = GetCooldown(cooldown)
 	if cooldown > 0 {
-		// not working, need to add current cooldown + 15
-		cooldown = AddCooldown(15)
-		res.Message = "You acted before your cooldown finished. Penalty +15s."
+		// adds 15s then reconvert to ms
+		cooldownTime = time.Unix(0, cooldown*int64(time.Millisecond)).Add(time.Second * 15)
+		fmt.Println(cooldownTime)
+		cooldown = cooldownTime.UnixNano() / int64(time.Millisecond)
+		fmt.Println(cooldown)
 		res.Cooldown = float32(cooldown) / 1000
 
 		sqlStatement := `
 		UPDATE account SET cooldown = $2 WHERE account.token=$1;
-		values
-		($1, $2, 1, $3)
 		`
-		cooldown := lib.AddCooldown(30)
-
 		_, err = db.Exec(sqlStatement, token, cooldown)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		response, err := json.Marshal(res)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(200)
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(response)
-
-		return false
+		return res.Cooldown
 	}
-	return true
+	return 0
 
 }

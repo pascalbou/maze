@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/pascalbou/maze/cdlib"
 	"github.com/pascalbou/maze/lib"
 )
 
@@ -46,7 +47,7 @@ func NewPlayerHandler(w http.ResponseWriter, r *http.Request) {
 	values
 	($1, $2, 1, $3)
 	`
-	cooldown := lib.AddCooldown(30)
+	cooldown := cdlib.CreateCooldown(30)
 
 	_, err = db.Exec(sqlStatement, req.Name, res.Token, cooldown)
 	if err != nil {
