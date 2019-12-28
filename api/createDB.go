@@ -26,7 +26,8 @@ func CreateDB() {
 		id SERIAL PRIMARY KEY,
 		name VARCHAR(16) UNIQUE NOT NULL,
 		token VARCHAR (64) UNIQUE NOT NULL,
-		current_room INT NOT NULL
+		current_room INT NOT NULL,
+		cooldown BIGINT
 	);
 	`
 

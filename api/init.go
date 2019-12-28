@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/pascalbou/maze/cdlib"
 	"github.com/pascalbou/maze/lib"
 )
 
@@ -14,6 +15,7 @@ func InitHandler(w http.ResponseWriter, r *http.Request) {
 	type initRes struct {
 		Name        string
 		CurrentRoom int
+		Cooldown    float32
 		North       int `json:",omitempty"`
 		East        int `json:",omitempty"`
 		South       int `json:",omitempty"`
@@ -44,20 +46,27 @@ func InitHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	q := `
-	SELECT account.name, account.current_room, room.north, room.east, room.south, room.west FROM account INNER JOIN room ON (account.current_room = room.room_id) WHERE account.token=$1;
+	SELECT account.name, account.current_room, account.cooldown, room.north, room.east, room.south, room.west FROM account INNER JOIN room ON (account.current_room = room.room_id) WHERE account.token=$1;
 	`
-
 	rows, err := db.Query(q, token.Token)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()
 
+	var cooldownDB int64
+
 	for rows.Next() {
-		if err := rows.Scan(&res.Name, &res.CurrentRoom, &res.North, &res.East, &res.South, &res.West); err != nil {
+		if err := rows.Scan(&res.Name, &res.CurrentRoom, &cooldownDB, &res.North, &res.East, &res.South, &res.West); err != nil {
 			log.Fatal(err)
 		}
 	}
+
+	cooldown := cdlib.GetCooldown(cooldownDB)
+	if cooldown < 0 {
+		cooldown = 1000
+	}
+	res.Cooldown = float32(cooldown) / 1000
 
 	response, err := json.Marshal(res)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/pascalbou/maze/cdlib"
 	"github.com/pascalbou/maze/lib"
 )
 
@@ -17,7 +18,8 @@ func NewPlayerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type npRes struct {
-		Token string
+		Token    string
+		Cooldown int
 	}
 
 	var req npReq
@@ -41,15 +43,18 @@ func NewPlayerHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	sqlStatement := `
-	insert into account (name, token, current_room)
+	insert into account (name, token, current_room, cooldown)
 	values
-	($1, $2, 1)
+	($1, $2, 1, $3)
 	`
+	cooldown := cdlib.CreateCooldown(30)
 
-	_, err = db.Exec(sqlStatement, req.Name, res.Token)
+	_, err = db.Exec(sqlStatement, req.Name, res.Token, cooldown)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	res.Cooldown = 30
 
 	response, err := json.Marshal(res)
 	if err != nil {

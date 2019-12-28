@@ -7,19 +7,22 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/pascalbou/maze/cdlib"
 	"github.com/pascalbou/maze/lib"
 )
 
 func MoveHandler(w http.ResponseWriter, r *http.Request) {
+
 	type moveReq struct {
 		Token     string
 		Direction string
 	}
-	
+
 	type moveRes struct {
 		PreviousRoom int
-		CurrentRoom    int
-		Message     string
+		CurrentRoom  int
+		Message      string
+		Cooldown     float32
 	}
 
 	var req moveReq
@@ -41,10 +44,29 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	q := `
+	check := cdlib.CanAct(req.Token)
+
+	if check != 0 {
+		res.Cooldown = check
+		res.Message = "You acted before your cooldown finished. Penalty +15s."
+
+		response, err := json.Marshal(res)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(200)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(response)
+
+		return
+	}
+
+	sqlStatement := `
 	SELECT current_room FROM account WHERE account.token=$1;
 	`
-	rows, err := db.Query(q, req.Token)
+	rows, err := db.Query(sqlStatement, req.Token)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,11 +78,11 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	q2 := fmt.Sprintf(`
+	sqlStatement = fmt.Sprintf(`
 	SELECT %s FROM room WHERE room.room_id=$1;
 	`, req.Direction)
 
-	rows, err = db.Query(q2, res.PreviousRoom)
+	rows, err = db.Query(sqlStatement, res.PreviousRoom)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,16 +96,30 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 
 	if res.CurrentRoom != 0 {
 		res.Message = "You moved " + req.Direction
-		q := `
-		UPDATE account SET current_room = $2 WHERE account.token=$1;
+		sqlStatement := `
+		UPDATE account SET current_room = $2, cooldown = $3 WHERE account.token=$1;
 		`
 
-		_, err := db.Exec(q, req.Token, res.CurrentRoom)
+		cooldown := cdlib.CreateCooldown(30)
+		res.Cooldown = 30
+
+		_, err := db.Exec(sqlStatement, req.Token, res.CurrentRoom, cooldown)
 		if err != nil {
 			log.Fatal(err)
-		} 
+		}
 	} else {
-		res.Message = "You cannot move " + req.Direction
+		res.Message = "Cooldown penalty 60s. You cannot move " + req.Direction
+		sqlStatement := `
+		UPDATE account SET cooldown = $2 WHERE account.token=$1;
+		`
+
+		cooldown := cdlib.CreateCooldown(60)
+		res.Cooldown = 60
+
+		_, err := db.Exec(sqlStatement, req.Token, cooldown)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	response, err := json.Marshal(res)
