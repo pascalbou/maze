@@ -101,15 +101,15 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 		UPDATE account SET current_room = $2, cooldown = $3 WHERE account.token=$1;
 		`
 
-		cooldown := cdlib.CreateCooldown(30)
-		res.Cooldown = 30
+		cooldown := cdlib.CreateCooldown(16)
+		res.Cooldown = 16
 			if req.NextRoom == res.CurrentRoom {
-				cooldown = cdlib.CreateCooldown(15)
+				cooldown = cdlib.CreateCooldown(8)
 				res.Cooldown /= 2
 				res.Message += " . Wise explorer: -50% cooldown" 
 			} else {
-				cooldown = cdlib.CreateCooldown(45)
-				res.Cooldown = 45
+				cooldown = cdlib.CreateCooldown(32)
+				res.Cooldown = 32
 				res.Message += " but next room id is incorrect: +15s penalty"
 			}
 
@@ -123,8 +123,8 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 		UPDATE account SET cooldown = $2 WHERE account.token=$1;
 		`
 
-		cooldown := cdlib.CreateCooldown(60)
-		res.Cooldown = 60
+		cooldown := cdlib.CreateCooldown(64)
+		res.Cooldown = 64
 
 		_, err := db.Exec(sqlStatement, req.Token, cooldown)
 		if err != nil {
