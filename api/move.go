@@ -16,6 +16,7 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 	type moveReq struct {
 		Token     string
 		Direction string
+		NextRoom int
 	}
 
 	type moveRes struct {
@@ -102,6 +103,15 @@ func MoveHandler(w http.ResponseWriter, r *http.Request) {
 
 		cooldown := cdlib.CreateCooldown(30)
 		res.Cooldown = 30
+			if req.NextRoom == res.CurrentRoom {
+				cooldown = cdlib.CreateCooldown(15)
+				res.Cooldown /= 2
+				res.Message += " . Wise explorer: -50% cooldown" 
+			} else {
+				cooldown = cdlib.CreateCooldown(45)
+				res.Cooldown = 45
+				res.Message += " but next room id is incorrect: +15s penalty"
+			}
 
 		_, err := db.Exec(sqlStatement, req.Token, res.CurrentRoom, cooldown)
 		if err != nil {
